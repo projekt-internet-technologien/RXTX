@@ -24,7 +24,7 @@ import org.kohsuke.args4j.Option;
 public class Main {
 
 	@Option(name="--ports",usage="Set USB ports")
-    public String ports = "/dev/ttyUSB0:/dev/ttyACM0";
+    public String ports = null;
 
 	@Option(name="--rxtxlib",usage="Set RXTX lib")
     public String rxtxlib = "/usr/lib/jni";
@@ -54,6 +54,19 @@ public class Main {
 	}
 	
 	public void start() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+
+		// Set some default ports: ttyUSB0...ttyUSB9 and ttyACM0...ttyACM9
+		if(this.ports == null) {
+			LinkedList<String> tmpPorts = new LinkedList<String>();
+			for (int i = 0; i < 10; i++) {
+				tmpPorts.add("/dev/ttyUSB" + i);
+				tmpPorts.add("/dev/ttyACM" + i);
+			}
+			
+			String[] tmpPortsArray = tmpPorts.toArray(new String[tmpPorts.size()]);
+			this.ports = String.join(":", tmpPortsArray);
+		}
+		
 		System.out.println("########################################################");
 		System.out.println("# Ports   : " + this.ports);
         System.out.println("# RXTX lib: " + this.rxtxlib);
