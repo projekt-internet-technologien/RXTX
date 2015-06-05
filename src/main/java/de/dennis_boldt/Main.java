@@ -4,9 +4,9 @@ import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.util.Enumeration;
 import java.util.LinkedList;
 
@@ -36,8 +36,14 @@ public class Main {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 
+		// http://blog.cedarsoft.com/2010/11/setting-java-library-path-programmatically/
+		System.setProperty( "java.library.path", "/usr/lib/jni" );
+		Field fieldSysPath = ClassLoader.class.getDeclaredField( "sys_paths" );
+		fieldSysPath.setAccessible( true );
+		fieldSysPath.set( null, null );
+		
 		@SuppressWarnings("rawtypes")
 		Enumeration ports2 = CommPortIdentifier.getPortIdentifiers();
 		LinkedList<String> ports = new LinkedList<String>();
