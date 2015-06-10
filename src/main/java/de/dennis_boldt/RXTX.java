@@ -21,7 +21,7 @@ import org.kohsuke.args4j.Option;
  * @see: http://angryelectron.com/rxtx-on-raspbian/
  * @see: 
  */
-public class Main {
+public class RXTX {
 
 	@Option(name="--ports",usage="Set USB ports")
     public String ports = null;
@@ -29,7 +29,7 @@ public class Main {
 	@Option(name="--rxtxlib",usage="Set RXTX lib")
     public String rxtxlib = "/usr/lib/jni";
 	
-	public Main(String[] args) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+	public RXTX(String[] args) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		CmdLineParser parser = new CmdLineParser(this);
         try {
         	parser.parseArgument(args);
@@ -123,6 +123,6 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		new Main(args);
+		new RXTX(args);
 	}
 }
