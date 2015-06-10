@@ -29,6 +29,18 @@ public class Main {
 	@Option(name="--rxtxlib",usage="Set RXTX lib")
     public String rxtxlib = "/usr/lib/jni";
 	
+	public Main(String[] args) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		CmdLineParser parser = new CmdLineParser(this);
+        try {
+        	parser.parseArgument(args);
+        	this.start(this.ports, this.rxtxlib);
+        } catch (CmdLineException e) {
+            System.err.println(e.getMessage());
+            parser.printUsage(System.err);
+        }
+		
+	}
+	
 	void connect(String portName) throws Exception {
 		CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
 		if (portIdentifier.isCurrentlyOwned()) {
@@ -53,10 +65,11 @@ public class Main {
 		}
 	}
 	
-	public void start() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+	public void start(String ports, String rxtxlib) throws NoSuchFieldException, 
+		SecurityException, IllegalArgumentException, IllegalAccessException {
 
 		// Set some default ports: ttyUSB0...ttyUSB9 and ttyACM0...ttyACM9
-		if(this.ports == null) {
+		if(ports == null) {
 			LinkedList<String> tmpPorts = new LinkedList<String>();
 			for (int i = 0; i < 10; i++) {
 				tmpPorts.add("/dev/ttyUSB" + i);
@@ -64,12 +77,12 @@ public class Main {
 			}
 			
 			String[] tmpPortsArray = tmpPorts.toArray(new String[tmpPorts.size()]);
-			this.ports = String.join(":", tmpPortsArray);
+			ports = String.join(":", tmpPortsArray);
 		}
 		
 		System.out.println("########################################################");
-		System.out.println("# Ports   : " + this.ports);
-        System.out.println("# RXTX lib: " + this.rxtxlib);
+		System.out.println("# Ports   : " + ports);
+        System.out.println("# RXTX lib: " + rxtxlib);
         System.out.println("########################################################");
         System.out.println();
 		
@@ -80,11 +93,11 @@ public class Main {
 		fieldSysPath.setAccessible( true );
 		fieldSysPath.set( null, null );
 
-		System.getProperties().setProperty("gnu.io.rxtx.SerialPorts", this.ports);
+		System.getProperties().setProperty("gnu.io.rxtx.SerialPorts", ports);
 		
 		@SuppressWarnings("rawtypes")
 		Enumeration ports2 = CommPortIdentifier.getPortIdentifiers();
-		LinkedList<String> ports = new LinkedList<String>();
+		LinkedList<String> portsList = new LinkedList<String>();
 
 		int i = 0;
 		while (ports2.hasMoreElements()) {
@@ -94,12 +107,12 @@ public class Main {
 
 			if (name.startsWith("/dev/ttyACM") || name.startsWith("/dev/ttyUSB")) {
 				System.out.println(i + ") " + name);
-				ports.push(port.getName());
+				portsList.push(port.getName());
 			}
 		}
 
 		try {
-			for (String port : ports) {
+			for (String port : portsList) {
 				System.out.println("Try " + port);
 				this.connect(port);
 				return;
@@ -110,16 +123,6 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		Main m = new Main();
-        CmdLineParser parser = new CmdLineParser(m);
-        try {
-                parser.parseArgument(args);
-                m.start();
-        } catch (CmdLineException e) {
-            // handling of wrong arguments
-            System.err.println(e.getMessage());
-            parser.printUsage(System.err);
-        }
-        
+		new Main(args);
 	}
 }
