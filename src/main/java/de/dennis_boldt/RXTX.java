@@ -2,19 +2,18 @@ package de.dennis_boldt;
 
 import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
+import gnu.io.UnsupportedCommOperationException;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.Enumeration;
 import java.util.LinkedList;
-import java.util.Observable;
 import java.util.Observer;
-
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
 
 /**
  * 
@@ -23,28 +22,15 @@ import org.kohsuke.args4j.Option;
  * @see: http://angryelectron.com/rxtx-on-raspbian/
  * @see: 
  */
-public class RXTX implements Observer {
+public class RXTX  {
 
-	@Option(name="--ports",usage="Set USB ports")
-    public String ports = null;
+	private OutputStream out;
+	
+	private OutputStream connect(String portName, Observer observer) throws NoSuchPortException, PortInUseException, UnsupportedCommOperationException, IOException {
 
-	@Option(name="--rxtxlib",usage="Set RXTX lib")
-    public String rxtxlib = "/usr/lib/jni";
-	
-	public RXTX(String[] args) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		CmdLineParser parser = new CmdLineParser(this);
-        try {
-        	parser.parseArgument(args);
-        	this.start(this.ports, this.rxtxlib, this);
-        } catch (CmdLineException e) {
-            System.err.println(e.getMessage());
-            parser.printUsage(System.err);
-        }
-		
-	}
-	
-	void connect(String portName, Observer observer) throws Exception {
+		OutputStream out = null;
 		CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
+		
 		if (portIdentifier.isCurrentlyOwned()) {
 			System.out.println("Error: Port is currently in use");
 		} else {
@@ -56,22 +42,22 @@ public class RXTX implements Observer {
 				serialPort.setSerialPortParams(9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
 
 				InputStream in = serialPort.getInputStream();
-				OutputStream out = serialPort.getOutputStream();
+				out = serialPort.getOutputStream();
 
 				SerialReader sr = new SerialReader(in);
 				sr.addObserver(observer);
 				
 				(new Thread(sr)).start();
-				(new Thread(new SerialWriter(out))).start();
 
 			} else {
 				System.out.println("Error: Only serial ports are handled by this app.");
 			}
 		}
+		
+		return out;
 	}
 	
-	public void start(String ports, String rxtxlib, Observer observer) throws NoSuchFieldException, 
-		SecurityException, IllegalArgumentException, IllegalAccessException {
+	public void start(String ports, String rxtxlib, Observer observer) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, NoSuchPortException, PortInUseException, UnsupportedCommOperationException, IOException {
 
 		// Set some default ports: ttyUSB0...ttyUSB9 and ttyACM0...ttyACM9
 		if(ports == null) {
@@ -116,29 +102,29 @@ public class RXTX implements Observer {
 			}
 		}
 
-		try {
-			for (String port : portsList) {
-				System.out.println("Try " + port);
-				this.connect(port, observer);
-				return;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}		
+		for (String port : portsList) {
+			System.out.println("Try " + port);
+			this.out = this.connect(port, observer);
+		}
 	}
 	
-	@Override
-	public void update(Observable o, Object arg) {
-		
-		if(arg instanceof byte[]) {
-			byte[] bytes = (byte[]) arg;
-			String s = new String(bytes);
-			System.out.print(s);
+	public void write(byte[] bytes) throws IOException {
+		if(this.out != null) {
+			this.out.write(bytes);
 		}
-		
 	}
-
-	public static void main(String[] args) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		new RXTX(args);
+	
+	public void write(byte b) throws IOException {
+		if(this.out != null) {
+			this.out.write(b);
+		}
 	}
+	
+	public void write(int i) throws IOException {
+		if(this.out != null) {
+			this.out.write(i);
+		}
+	}
+	
+	
 }
