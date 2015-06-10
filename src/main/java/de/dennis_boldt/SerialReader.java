@@ -18,9 +18,14 @@ public class SerialReader extends Observable implements Runnable {
 		int len = -1;
 		try {
 			while ((len = this.in.read(buffer)) > -1) {
-				String s = new String(buffer, 0, len);
+				byte[] bytes = new byte[len];
+				
+				for (int i = 0; i < bytes.length; i++) {
+					bytes[i] = buffer[i];
+				}
+				
 				setChanged();
-				notifyObservers(s);
+				notifyObservers(bytes);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

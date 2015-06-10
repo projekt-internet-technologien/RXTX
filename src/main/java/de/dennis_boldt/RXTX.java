@@ -129,7 +129,13 @@ public class RXTX implements Observer {
 	
 	@Override
 	public void update(Observable o, Object arg) {
-		System.out.print(arg);
+		
+		if(arg instanceof byte[]) {
+			byte[] bytes = (byte[]) arg;
+			String s = new String(bytes);
+			System.out.print(s);
+		}
+		
 	}
 
 	public static void main(String[] args) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
