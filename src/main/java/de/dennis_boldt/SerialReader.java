@@ -2,8 +2,10 @@ package de.dennis_boldt;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Observable;
+import java.util.Observer;
 
-public class SerialReader implements Runnable {
+public class SerialReader extends Observable implements Runnable {
 
 	InputStream in;
 
@@ -16,10 +18,17 @@ public class SerialReader implements Runnable {
 		int len = -1;
 		try {
 			while ((len = this.in.read(buffer)) > -1) {
-				System.out.print(new String(buffer, 0, len));
+				String s = new String(buffer, 0, len);
+				setChanged();
+				notifyObservers(s);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public synchronized void addObserver(Observer o) {
+		super.addObserver(o);
 	}
 }

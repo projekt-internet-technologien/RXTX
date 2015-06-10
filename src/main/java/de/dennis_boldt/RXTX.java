@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.Enumeration;
 import java.util.LinkedList;
+import java.util.Observable;
+import java.util.Observer;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -21,7 +23,7 @@ import org.kohsuke.args4j.Option;
  * @see: http://angryelectron.com/rxtx-on-raspbian/
  * @see: 
  */
-public class RXTX {
+public class RXTX implements Observer {
 
 	@Option(name="--ports",usage="Set USB ports")
     public String ports = null;
@@ -33,7 +35,7 @@ public class RXTX {
 		CmdLineParser parser = new CmdLineParser(this);
         try {
         	parser.parseArgument(args);
-        	this.start(this.ports, this.rxtxlib);
+        	this.start(this.ports, this.rxtxlib, this);
         } catch (CmdLineException e) {
             System.err.println(e.getMessage());
             parser.printUsage(System.err);
@@ -41,7 +43,7 @@ public class RXTX {
 		
 	}
 	
-	void connect(String portName) throws Exception {
+	void connect(String portName, Observer observer) throws Exception {
 		CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
 		if (portIdentifier.isCurrentlyOwned()) {
 			System.out.println("Error: Port is currently in use");
@@ -56,7 +58,10 @@ public class RXTX {
 				InputStream in = serialPort.getInputStream();
 				OutputStream out = serialPort.getOutputStream();
 
-				(new Thread(new SerialReader(in))).start();
+				SerialReader sr = new SerialReader(in);
+				sr.addObserver(observer);
+				
+				(new Thread(sr)).start();
 				(new Thread(new SerialWriter(out))).start();
 
 			} else {
@@ -65,7 +70,7 @@ public class RXTX {
 		}
 	}
 	
-	public void start(String ports, String rxtxlib) throws NoSuchFieldException, 
+	public void start(String ports, String rxtxlib, Observer observer) throws NoSuchFieldException, 
 		SecurityException, IllegalArgumentException, IllegalAccessException {
 
 		// Set some default ports: ttyUSB0...ttyUSB9 and ttyACM0...ttyACM9
@@ -114,12 +119,17 @@ public class RXTX {
 		try {
 			for (String port : portsList) {
 				System.out.println("Try " + port);
-				this.connect(port);
+				this.connect(port, observer);
 				return;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}		
+	}
+	
+	@Override
+	public void update(Observable o, Object arg) {
+		System.out.print(arg);
 	}
 
 	public static void main(String[] args) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {

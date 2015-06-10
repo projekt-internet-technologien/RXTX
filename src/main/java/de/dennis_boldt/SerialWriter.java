@@ -21,4 +21,5 @@ public class SerialWriter implements Runnable {
 			e.printStackTrace();
 		}
 	}
+	
 }
