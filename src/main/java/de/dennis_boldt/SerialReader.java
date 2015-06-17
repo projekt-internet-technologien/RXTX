@@ -19,11 +19,11 @@ public class SerialReader extends Observable implements Runnable {
 		try {
 			while ((len = this.in.read(buffer)) > -1) {
 				byte[] bytes = new byte[len];
-				
+
 				for (int i = 0; i < bytes.length; i++) {
 					bytes[i] = buffer[i];
 				}
-				
+
 				setChanged();
 				notifyObservers(bytes);
 			}
@@ -31,7 +31,7 @@ public class SerialReader extends Observable implements Runnable {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public synchronized void addObserver(Observer o) {
 		super.addObserver(o);
