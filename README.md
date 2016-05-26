@@ -1,7 +1,7 @@
 # Get
 
 ```
-git clone git@git.dennis-boldt.de:arduino/rxtx.git
+git clone git@github.com:projekt-internet-technologien/RXTX.git
 ```
 
 # Install dependencies
@@ -14,13 +14,13 @@ sudo apt-get install librxtx-java
 
 # Load Arduino application to Arduino
 
-Upload the `arduino/SerialRead/SerialRead.ino` the the Arduino
+Upload the `arduino/SerialRead/SerialRead.ino` to the Arduino
 
 # Run Java Application
 
 ## Options
 
-* `--ports` - no default `/dev/ttyUSB0:/dev/ttyUSB1:/dev/ttyACM0:/dev/ttyACM1`
+* `--ports` - no default, examples: `/dev/ttyUSB0:/dev/ttyUSB1:/dev/ttyACM0:/dev/ttyACM1`
 * `--rxtxlib` - default is `/usr/lib/jni`
 
 ## Manual 
@@ -36,6 +36,8 @@ java -jar target/RXTX-0.0.1-SNAPSHOT.jar --ports /dev/ttyUSB0:/dev/ttyACM0 --rxt
 ```
 ./run
 ```
+
+Type `on` or `off` to the terminal. The LED should switch on and off.
 
 # Sources
 
