@@ -45,7 +45,9 @@ public class RXTX  {
 				out = serialPort.getOutputStream();
 
 				SerialReader sr = new SerialReader(in);
-				sr.addObserver(observer);
+				if(observer != null) {
+					sr.addObserver(observer);
+				}
 				
 				(new Thread(sr)).start();
 
