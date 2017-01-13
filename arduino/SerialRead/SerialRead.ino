@@ -1,7 +1,7 @@
 // @see: http://stackoverflow.com/a/17051931/605890
 String inData;
 
-int ledPin = 13; 
+int ledPin = 2; 
 
 void setup() {
     Serial.begin(9600);
